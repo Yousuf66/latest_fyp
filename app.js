@@ -1,16 +1,20 @@
+
+const ip = 'http://192.168.100.9:5000'
 function getProfiles(){
     const xhr = new XMLHttpRequest();
 
-    xhr.open('GET','http://192.168.100.12:5000/suspect',true);
+    xhr.open('GET',ip+'/suspect',true);
 
     xhr.onload = function(){
   if(this.status === 200){
-      
+    
       data = JSON.parse(this.responseText);
+      // localStorage.setItem(this.responseText);
+      getSuspect(data)
       data.forEach(function(user){
         output += `
         
-        <div class="card mb-3" id = "${user.id}"">
+        <div class="card mb-3" id = "${user.id}">
           <img class="card-img-top" src="${user.image}.jpg"  alt="Card image cap">
           <div class="card-body">
             <h5 class="card-title">${user.name}</h5>
@@ -29,14 +33,14 @@ function getProfiles(){
 
 }
 
-xhr.send();
+ xhr.send();
 }
 
 function deletePost(sus_id){
    
-var url = "http://192.168.100.12:5000/suspect";
+// var url = "http://192.168.100.9:5000/suspect";
 var xhr = new XMLHttpRequest();
-xhr.open("DELETE", url+`/${sus_id}`, true);
+xhr.open("DELETE", ip+'/suspect'+`/${sus_id}`, true);
 xhr.onload = function () {
   var users = JSON.parse(JSON.stringify(xhr.responseText));
   if (xhr.readyState == 4 && xhr.status == "200") {
@@ -65,16 +69,18 @@ xhr.send(null);
 function updateProfile(sus_id){
   const xhr = new XMLHttpRequest();
 
-  xhr.open('GET','http://192.168.100.12:5000/suspect'+`/${sus_id}`,true);
+  xhr.open('GET',ip+'/suspect'+`/${sus_id}`,true);
 
   xhr.onload = function(){
 if(this.status === 200){
     
     data = JSON.parse(this.responseText);
 
+    // pass the response ojects to getSuspect()
+
     data.forEach(function(user){
      output = `
-      <form method="POST" action="http://192.168.100.12:5000/suspect/${sus_id}" enctype="multipart/form-data">
+      <form method="POST" action="http://192.168.100.9:5000/suspect/${sus_id}" enctype="multipart/form-data">
       <input type="text" id="defaultContactFormName" name="name" class="form-control mb-4" placeholder="${user.name}">
       <!-- Email -->
       <!-- Message -->
@@ -90,30 +96,44 @@ if(this.status === 200){
         `;
     }
   );
-    document.getElementById(`"${sus_id}"`).innerHTML = output;
+    document.getElementById(`${sus_id}`).innerHTML = output;
 }
 }
 xhr.send();
 }
-// function addUser(){
-//   var url = "http://192.168.100.12:5000/suspect";
 
-// var data = {};
-// data.firstname = "John";
-// data.lastname  = "Snow";
-// var json = JSON.stringify(data);
+function getSuspect(){
+  var id = document.querySelector("#sus_id").value;
+    const xhr = new XMLHttpRequest();
+  xhr.open('GET',ip+'/suspect/'+id,true);
 
-// var xhr = new XMLHttpRequest();
-// xhr.open("POST", url, true);
-// xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-// xhr.onload = function () {
-// 	var users = JSON.parse(xhr.responseText);
-// 	if (xhr.readyState == 4 && xhr.status == "201") {
-// 		console.table(users);
-// 	} else {
-// 		console.error(users);
-// 	}
-// }
-// xhr.send(json);
-// }
-document.querySelector('body').addEventListener('DOMContentLoaded',getProfiles());
+  xhr.onload = function(){
+  if(this.status === 200){
+    document.getElementById('output').innerHTML = ' ';  
+      data = JSON.parse(this.responseText);
+      console.log(data);
+      data.forEach(function(user){
+      output = `
+      
+      <div class="card mb-3" id = "${user.id}">
+        <img class="card-img-top" src="${user.image}.jpg"  alt="Card image cap">
+        <div class="card-body">
+          <h5 class="card-title">${user.name}</h5>
+          <p class="card-text">${user.message}</p>
+          <p class="card-text">${user.id}</p>
+          <button class="btn btn-primary" id="deletePost" onclick='deletePost(${user.id})' ">Delete</button>
+          <button class="btn btn-primary" id="updatePost" onclick='updateProfile(${user.id})' ">updatepost</button>
+        </div>
+      </div>
+      `;
+    }
+  );
+   document.getElementById('output').innerHTML = output;
+  }
+  
+
+}
+xhr.send();
+}
+
+// document.querySelector('body').addEventListener('DOMContentLoaded',getProfiles()); 
